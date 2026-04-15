@@ -3,8 +3,8 @@ import streamlit.components.v1 as components
 import json
 
 st.set_page_config(
-    page_title="CrossFit + Trail Run \u00b7 May 2026",
-    page_icon="\ud83c\udfc3",
+    page_title="CrossFit + Trail Run - May 2026",
+    page_icon=":runner:",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
