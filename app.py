@@ -525,9 +525,12 @@ BLOCKS = {
 # =========================================================================
 # SERIALIZE TO JSON (handles ALL escaping safely)
 # =========================================================================
-BLOCKS_JSON      = json.dumps(BLOCKS)
-WEEK_META_JSON   = json.dumps(WEEK_META)
-LONG_TRAILS_JSON = json.dumps(LONG_TRAILS)
+# Combine into one safe data blob. Replace </ to prevent premature script-tag close.
+APP_DATA_JSON = json.dumps({
+    "blocks":     {str(k): v for k, v in BLOCKS.items()},
+    "weekMeta":   WEEK_META,
+    "longTrails": LONG_TRAILS,
+}).replace("</", "<\\/")
 
 # =========================================================================
 # HTML / CSS / JS
@@ -720,12 +723,16 @@ body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgro
   <div id="cal-detail"></div>
 </div>
 
+<!-- ═══════ DATA ISLAND (safe injection) ═══════ -->
+<script type="application/json" id="APP_DATA">{APP_DATA_JSON}</script>
+
 <!-- ═══════ JAVASCRIPT ═══════ -->
 <script>
-// ── Data from Python ──
-var BLOCKS     = {BLOCKS_JSON};
-var WEEK_META  = {WEEK_META_JSON};
-var LONG_TRAILS= {LONG_TRAILS_JSON};
+// ── Parse data from the data island ──
+var _d = JSON.parse(document.getElementById('APP_DATA').textContent);
+var BLOCKS      = _d.blocks;
+var WEEK_META   = _d.weekMeta;
+var LONG_TRAILS = _d.longTrails;
 
 // ── Type config ──
 var TYPE = {{
