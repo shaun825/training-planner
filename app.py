@@ -673,6 +673,7 @@ body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgro
     <h1 style="font-size:20px;font-weight:500;margin-bottom:2px">May 2026 &mdash; CrossFit + Trail Running</h1>
     <p style="font-size:12px;color:var(--tx3)">Trail: Tue &amp; Sun &nbsp;&middot;&nbsp; 25&ndash;27 km/week &nbsp;&middot;&nbsp; 4-week cycles &nbsp;&middot;&nbsp; Rest: Saturday</p>
   </div>
+  <span id="ver-badge" style="font-size:10px;padding:2px 8px;border-radius:4px;background:var(--bg3);color:var(--tx3);font-family:monospace"></span>
 </div>
 <div class="tab-nav">
   <button class="tab-btn active" onclick="switchTab('planner')">Week Planner</button>
@@ -723,16 +724,24 @@ body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgro
   <div id="cal-detail"></div>
 </div>
 
-<!-- ═══════ DATA ISLAND (safe injection) ═══════ -->
-<script type="application/json" id="APP_DATA">{APP_DATA_JSON}</script>
-
 <!-- ═══════ JAVASCRIPT ═══════ -->
 <script>
-// ── Parse data from the data island ──
-var _d = JSON.parse(document.getElementById('APP_DATA').textContent);
-var BLOCKS      = _d.blocks;
-var WEEK_META   = _d.weekMeta;
-var LONG_TRAILS = _d.longTrails;
+// ── Decode base64 payload (bulletproof: only A-Za-z0-9+/= chars) ──
+(function() {{
+  try {{
+    var _d = JSON.parse(atob("{APP_DATA_B64}"));
+    window.BLOCKS      = _d.blocks;
+    window.WEEK_META   = _d.weekMeta;
+    window.LONG_TRAILS = _d.longTrails;
+    window.APP_VERSION = _d.version;
+  }} catch(e) {{
+    document.body.innerHTML = '<div style="padding:2rem;color:red;font-family:monospace">' +
+      '<b>Data load error ('+e+')</b></div>';
+  }}
+}})();
+var BLOCKS      = window.BLOCKS;
+var WEEK_META   = window.WEEK_META;
+var LONG_TRAILS = window.LONG_TRAILS;
 
 // ── Type config ──
 var TYPE = {{
@@ -1211,6 +1220,10 @@ function openCalDay(d, el) {{
 // INIT
 // ═══════════════════════════════════════════════════════════
 function init() {{
+  // Show version badge — confirms correct deployment
+  var vb = document.getElementById('ver-badge');
+  if (vb) vb.textContent = window.APP_VERSION || 'unknown';
+
   loadState();
   renderPlanner();
 }}
