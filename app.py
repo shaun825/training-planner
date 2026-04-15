@@ -523,14 +523,18 @@ BLOCKS = {
 }
 
 # =========================================================================
-# SERIALIZE TO JSON (handles ALL escaping safely)
+
 # =========================================================================
-# Combine into one safe data blob. Replace </ to prevent premature script-tag close.
-APP_DATA_JSON = json.dumps({
+# SERIALIZE — base64 encode: A-Za-z0-9+/= only, safe in all contexts
+# =========================================================================
+import base64 as _b64
+APP_VERSION = "v5"
+APP_DATA_B64 = _b64.b64encode(json.dumps({
     "blocks":     {str(k): v for k, v in BLOCKS.items()},
     "weekMeta":   WEEK_META,
     "longTrails": LONG_TRAILS,
-}).replace("</", "<\\/")
+    "version":    APP_VERSION,
+}).encode("utf-8")).decode("ascii")
 
 # =========================================================================
 # HTML / CSS / JS
