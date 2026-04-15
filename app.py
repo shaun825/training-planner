@@ -528,7 +528,7 @@ BLOCKS = {
 # SERIALIZE — base64 encode: A-Za-z0-9+/= only, safe in all contexts
 # =========================================================================
 import base64 as _b64
-APP_VERSION = "v5"
+APP_VERSION = "v6"
 APP_DATA_B64 = _b64.b64encode(json.dumps({
     "blocks":     {str(k): v for k, v in BLOCKS.items()},
     "weekMeta":   WEEK_META,
@@ -730,22 +730,18 @@ body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgro
 
 <!-- ═══════ JAVASCRIPT ═══════ -->
 <script>
-// ── Decode base64 payload (bulletproof: only A-Za-z0-9+/= chars) ──
-(function() {{
-  try {{
-    var _d = JSON.parse(atob("{APP_DATA_B64}"));
-    window.BLOCKS      = _d.blocks;
-    window.WEEK_META   = _d.weekMeta;
-    window.LONG_TRAILS = _d.longTrails;
-    window.APP_VERSION = _d.version;
-  }} catch(e) {{
-    document.body.innerHTML = '<div style="padding:2rem;color:red;font-family:monospace">' +
-      '<b>Data load error ('+e+')</b></div>';
-  }}
-}})();
-var BLOCKS      = window.BLOCKS;
-var WEEK_META   = window.WEEK_META;
-var LONG_TRAILS = window.LONG_TRAILS;
+// ── Decode base64 payload ──
+var BLOCKS, WEEK_META, LONG_TRAILS, APP_VERSION;
+try {{
+  var _raw = atob("{APP_DATA_B64}");
+  var _d   = JSON.parse(_raw);
+  BLOCKS      = _d.blocks;      // keys are strings: "0","1","2","3"
+  WEEK_META   = _d.weekMeta;
+  LONG_TRAILS = _d.longTrails;
+  APP_VERSION = _d.version;
+}} catch(e) {{
+  document.body.innerHTML = '<div style="padding:2rem;color:red;font-family:monospace"><b>JS data error: '+e+'</b></div>';
+}}
 
 // ── Type config ──
 var TYPE = {{
@@ -793,7 +789,7 @@ function loadState() {{
 }}
 
 // ── Block helpers ──
-function blocksForWeek(w) {{ return BLOCKS[w] || []; }}
+function blocksForWeek(w) {{ return BLOCKS[String(w)] || []; }}
 function assignmentsForWeek(w) {{ return state.assignments[String(w)] || {{}}; }}
 function placedIds(w) {{
   var a = assignmentsForWeek(w), ids = {{}};
